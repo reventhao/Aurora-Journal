@@ -24,6 +24,12 @@
 - 本地上传、缩略图、媒体引用统计
 - Expo 移动端阅读、评论、通知、个人中心、阅读清单
 
+## 项目截图
+
+| 博客首页 | 后台配置 |
+| --- | --- |
+| ![博客首页](./docs/screenshots/homepage.png) | ![后台站点设置](./docs/screenshots/admin-settings.png) |
+
 ## 技术栈
 
 - Frontend: Vue 3, Vite, Pinia, Vue Router, Arco Design
