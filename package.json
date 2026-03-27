@@ -1,0 +1,26 @@
+{
+  "name": "aurora-blog-platform",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "bootstrap": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "dev:all": "node scripts/dev.mjs --services=web,admin,mobile",
+    "dev:web": "pnpm --filter @aurora/web dev",
+    "dev:admin": "pnpm --filter @aurora/admin dev",
+    "dev:api": "pnpm --filter @aurora/api start:dev",
+    "dev:mobile": "pnpm --filter @aurora/mobile start",
+    "dev:mobile:lan": "pnpm --filter @aurora/mobile start",
+    "dev:mobile:stack": "node scripts/dev.mjs --services=mobile",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @aurora/web build",
+    "build:admin": "pnpm --filter @aurora/admin build",
+    "build:api": "pnpm --filter @aurora/api build",
+    "lint": "pnpm -r lint",
+    "db:generate": "pnpm --filter @aurora/api prisma:generate",
+    "db:migrate": "pnpm --filter @aurora/api prisma:migrate",
+    "db:seed": "pnpm --filter @aurora/api prisma:seed"
+  }
+}

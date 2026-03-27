@@ -1,0 +1,29 @@
+{
+  "type": "Live2D Model Setting",
+  "name": "aurora-shizuku",
+  "model": "shizuku.moc",
+  "textures": [
+    "shizuku.1024/texture_00.png",
+    "shizuku.1024/texture_01.png",
+    "shizuku.1024/texture_02.png",
+    "shizuku.1024/texture_03.png",
+    "shizuku.1024/texture_04.png",
+    "shizuku.1024/texture_05.png"
+  ],
+  "physics": "shizuku.physics.json",
+  "pose": "shizuku.pose.json",
+  "motions": {
+    "idle": [
+      { "file": "motions/idle_00.mtn", "fade_in": 1800, "fade_out": 1800 },
+      { "file": "motions/idle_01.mtn", "fade_in": 1800, "fade_out": 1800 },
+      { "file": "motions/idle_02.mtn", "fade_in": 1800, "fade_out": 1800 }
+    ],
+    "tap_body": [
+      { "file": "motions/tapBody_00.mtn", "fade_in": 400, "fade_out": 900 }
+    ]
+  },
+  "hit_areas": [
+    { "name": "head", "id": "D_REF.HEAD" },
+    { "name": "body", "id": "D_REF.BODY" }
+  ]
+}

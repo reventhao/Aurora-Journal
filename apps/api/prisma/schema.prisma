@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+}
+
+enum MediaSource {
+  LOCAL
+  PEXELS
+}
+
+enum NotificationLevel {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+model User {
+  id                String      @id @default(cuid())
+  email             String      @unique
+  passwordHash      String
+  name              String
+  avatar            String?
+  jobTitle          String      @default("")
+  phone             String      @default("")
+  location          String      @default("")
+  website           String      @default("")
+  bio               String      @default("")
+  status            UserStatus  @default(ACTIVE)
+  passwordUpdatedAt DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  roles             UserRole[]
+  postRevisions     PostRevision[]
+  operationLogs     OperationLog[]
+  notifications     Notification[]
+  recycleBinItems   RecycleBinItem[]
+  settingVersions   SettingVersion[]
+}
+
+model EmailVerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  purpose   String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  name        String
+  description String          @default("")
+  isSystem    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  name        String
+  description String          @default("")
+  group       String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  roles       RolePermission[]
+}
+
+model UserRole {
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId        String
+  permissionId  String
+  assignedAt    DateTime   @default(now())
+  role          Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  posts       Post[]
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  color     String    @default("#7c3aed")
+  visible   Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     PostTag[]
+}
+
+model Post {
+  id             String      @id @default(cuid())
+  title          String
+  slug           String      @unique
+  excerpt        String      @default("")
+  content        String      @db.Text
+  coverImage     String      @default("")
+  status         PostStatus  @default(DRAFT)
+  featured       Boolean     @default(false)
+  seoTitle       String      @default("")
+  seoDescription String      @default("")
+  readingTime    Int         @default(5)
+  views          Int         @default(0)
+  publishedAt    DateTime?
+  scheduledPublishAt   DateTime?
+  scheduledUnpublishAt DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  categoryId     String?
+  category       Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags           PostTag[]
+  comments       Comment[]
+  revisions      PostRevision[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  author    String
+  email     String
+  content   String   @db.Text
+  approved  Boolean  @default(false)
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  parentId  String?
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  fileName  String
+  path      String
+  url       String
+  thumbUrl  String?
+  mimeType  String
+  size      Int
+  source    MediaSource @default(LOCAL)
+  groupName String      @default("")
+  folderId  String?
+  tags      String[]
+  altText   String      @default("")
+  createdAt DateTime @default(now())
+  folder    MediaFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+}
+
+model MediaFolder {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  media       Media[]
+}
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id         String            @id @default(cuid())
+  title      String
+  content    String            @db.Text
+  level      NotificationLevel @default(INFO)
+  category   String
+  isRead     Boolean           @default(false)
+  readAt     DateTime?
+  link       String?
+  actorId    String?
+  actorName  String            @default("")
+  entityType String?
+  entityId   String?
+  detail     Json?
+  createdAt  DateTime          @default(now())
+  actor      User?             @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([isRead, createdAt])
+}
+
+model RecycleBinItem {
+  id            String   @id @default(cuid())
+  entityType    String
+  entityId      String
+  title         String
+  summary       String   @default("")
+  snapshot      Json
+  deletedById   String?
+  deletedByName String   @default("")
+  deletedAt     DateTime @default(now())
+  actor         User?    @relation(fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@unique([entityType, entityId])
+  @@index([deletedAt])
+}
+
+model SettingVersion {
+  id            String   @id @default(cuid())
+  settingKey    String
+  value         String   @db.Text
+  summary       String   @default("")
+  createdById   String?
+  createdByName String   @default("")
+  createdAt     DateTime @default(now())
+  actor         User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([settingKey, createdAt])
+}
+
+model PostRevision {
+  id          String   @id @default(cuid())
+  postId       String
+  version      Int
+  reason       String   @default("")
+  snapshot     Json
+  createdAt    DateTime @default(now())
+  createdById  String?
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([postId, version])
+}
+
+model OperationLog {
+  id          String   @id @default(cuid())
+  action      String
+  targetType  String
+  targetId    String?
+  targetLabel String   @default("")
+  detail      Json?
+  actorId     String?
+  actorName   String   @default("")
+  createdAt   DateTime @default(now())
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
