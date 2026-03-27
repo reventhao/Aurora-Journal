@@ -26,9 +26,13 @@
 
 ## 项目截图
 
-| 博客首页 | 后台配置 |
-| --- | --- |
-| ![博客首页](./docs/screenshots/homepage.png) | ![后台站点设置](./docs/screenshots/admin-settings.png) |
+### 博客首页
+
+<img src="./docs/screenshots/homepage.png" alt="博客首页" width="100%" />
+
+### 后台配置
+
+<img src="./docs/screenshots/admin-settings.png" alt="后台站点设置" width="100%" />
 
 ## 技术栈
 
